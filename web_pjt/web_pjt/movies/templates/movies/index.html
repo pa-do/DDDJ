@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load bootstrap_pagination %}
+{% block content %}
+<br>
+<h1 class='text-center'>
+  {% if request.resolver_match.url_name == 'movie_genre' %}
+  # {{ genre }}
+  {% elif request.resolver_match.url_name == 'recommend' %}
+  # for U
+  {% elif request.resolver_match.url_name == 'search' %}
+  {{ kwd }} 검색 결과<br>
+  <small>{{ movies|length }}건</small>
+  {% else %}
+  영화 전체 보기
+  {% endif %}
+</h1>
+
+{% if request.resolver_match.url_name == 'index' %}
+
+<div class="row">
+  <div class="col-2"></div>
+  <div class="my-3 input-group col-8 text-center">
+    <input type="text" class="form-control mx-auto my-0" id="search" placeholder="영화 제목으로 검색..." style="width: 80%">
+    <div class="input-group-append">
+      <button type="button" class="btn btn-dark" id="search_btn">검색</button>
+    </div>
+  </div>
+  <div class="col-2"></div>
+</div>
+
+<script>
+  const Search = document.getElementById('search');
+  search.addEventListener('keypress', function (event) {
+    if (event.key === 'Enter') {
+      kwd = document.getElementById('search').value;
+      console.log(kwd)
+      if (kwd != '') {
+        var date = new Date();
+        date.setTime(date.getTime() + 1 * 60 * 60 * 1 * 1000) // 1시간 쿠키 저장
+        document.cookie = 'kwd' + '=' + kwd + ';expires=' + date.toUTCString() + ';path=/';
+        window.location.href = "search/";
+      }
+    }
+  })
+  const Searchbtn = document.getElementById('search_btn');
+  Searchbtn.addEventListener('click', function (event) {
+    kwd = document.getElementById('search').value;
+    console.log(kwd)
+    if (kwd != '') {
+      var date = new Date();
+      date.setTime(date.getTime() + 1 * 60 * 60 * 1 * 1000) // 1시간 쿠키 저장
+      document.cookie = 'kwd' + '=' + kwd + ';expires=' + date.toUTCString() + ';path=/';
+      window.location.href = "search/";
+    }    
+  })
+</script>
+
+{% endif %}
+
+<div class="row">
+  {% for movie in page_obj %}
+  <div class="col-3 mb-4 mx-0">
+    <div class="card">
+      <img src="https://image.tmdb.org/t/p/w342/{{movie.poster_path}}" class="card-img-top" alt="" data-toggle="modal"
+        data-target="#Modal-{{ movie.pk }}" style="object-fit: cover; width: 253px; height: 377.28px; border-radius: 10px;">
+    </div>
+  </div>
+  <!-- Modal -->
+  <div class="modal fade" id="Modal-{{ movie.pk }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">{{ movie.title }}</h5>
+          {% for genre in movie.genres.all %}
+          <a href="{% url 'movies:movie_genre' genre.pk %}" class="badge badge-warning mx-1 my-auto">#{{ genre }}</a>
+          {% empty %}
+          {% endfor %}
+          <button type=" button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body row">
+          <div class="col-md-6">
+            <img src="https://image.tmdb.org/t/p/original/{{ movie.backdrop_path }}" class="card-img-top"
+              alt="{{ movie.title }}" />
+            <hr>
+            {% if movie.title|length > 10 %}
+            <h4 class="text-center">{{ movie.title }}</h4>
+            {% else %}
+            <h2 class="text-center">{{ movie.title }}</h2>
+            {% endif %}
+            <small class="d-block text-center">{{ movie.original_title }}</small>
+
+            {% if movie.vote_average >= 7.50 %}
+            <h3 class="text-success text-right my-0">{{ movie.vote_average }}</h3>
+            {% elif movie.vote_average <= 2.50 %}
+            <h3 class="text-danger text-right my-0">{{ movie.vote_average }}</h3>
+            {% else %}
+            <h3 class="text-right my-0">{{ movie.vote_average }}</h3>
+            {% endif %}
+            <small class="d-block text-right">참여 인원: {{ movie.vote_count }}</small>
+            <small class="d-block text-right">개봉일: {{ movie.release_date }}</small>
+
+          </div>
+          <div class="col-md-6">
+            <p>{{ movie.overview }}</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          {% if user.is_authenticated %}
+          <a href="{% url 'movies:movie_articles' movie.pk %}" class="btn btn-dark">영화 후기 보러가기</a>
+          <a href="{% url 'movies:movie_articles_create' movie.pk %}" class="btn btn-dark">영화 후기 작성하기</a>
+          {% endif %}
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+  <div class="text-right p-3">
+    {% if request.resolver_match.url_name == 'search' %}
+    <a href="{% url 'movies:index' %}" class="btn btn-dark">뒤로가기</a>
+    {% endif %}
+  </div>
+
+  <div class='col-12 my-5 text-center'>
+    {% bootstrap_paginate page_obj range=10 show_prev_next="false" show_first_last="true" %}
+  </div>
+
+{% endblock %}

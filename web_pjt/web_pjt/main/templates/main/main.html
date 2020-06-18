@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+<!-- 이미지 -->
+{% block bigcontent %}
+<img
+  src="https://images.unsplash.com/photo-1579104173178-badf689ac6b6?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2035&q=80"
+  class="img-fluid" alt="">
+{% endblock %}
+
+{% block content %}
+
+<!-- 문구 -->
+<div class="my-5">
+  <h1 class="text-center">LIFE IS SHORT</h1>
+  <h1 class="text-center">YOU NEED MOVIE</h1>
+</div>
+
+<!-- 최신 영화 -->
+<h4 class="text-left">최신 영화</h4>
+<br>
+<div class="row">
+  {% for movie in movies %}
+  <div class="col-3 mb-4">
+    <div class="card">
+      <img src="https://image.tmdb.org/t/p/w342/{{movie.poster_path}}" class="card-img-top" alt="" data-toggle="modal"
+        data-target="#Modal-{{ movie.pk }}" style="object-fit: cover; width: 253px; height: 377.28px; border-radius: 10px;">
+    </div>
+  </div>
+  <!-- Modal -->
+  <div class="modal fade" id="Modal-{{ movie.pk }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">{{ movie.title }}</h5>
+          {% for genre in movie.genres.all %}
+          <a href="{% url 'movies:movie_genre' genre.pk %}" class="badge badge-warning mx-1">#{{ genre }}</a>
+          {% empty %}
+          {% endfor %}
+          <button type=" button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body row">
+          <div class="col-md-6">
+            <img src="https://image.tmdb.org/t/p/original/{{ movie.backdrop_path }}" class="card-img-top"
+              alt="{{ movie.title }}"/>
+            <hr>
+            {% if movie.title|length > 10 %}
+            <h4 class="text-center">{{ movie.title }}</h4>
+            {% else %}
+            <h2 class="text-center">{{ movie.title }}</h2>
+            {% endif %}
+            <small class="d-block text-center">{{ movie.original_title }}</small>
+
+            {% if movie.vote_average >= 7.50 %}
+            <h3 class="text-success text-right my-0">{{ movie.vote_average }}</h3>
+            {% elif movie.vote_average <= 2.50 %}
+            <h3 class="text-danger text-right my-0">{{ movie.vote_average }}</h3>
+            {% else %}
+            <h3 class="text-right my-0">{{ movie.vote_average }}</h3>
+            {% endif %}
+            <small class="d-block text-right">참여 인원: {{ movie.vote_count }}</small>
+            <small class="d-block text-right">개봉일: {{ movie.release_date }}</small>
+
+          </div>
+          <div class="col-md-6">
+            <p>{{ movie.overview }}</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          {% if user.is_authenticated %}
+          <a href="{% url 'movies:movie_articles' movie.pk %}" class="btn btn-dark">영화 후기 보러가기</a>
+          <a href="{% url 'movies:movie_articles_create' movie.pk %}" class="btn btn-dark">영화 후기 작성하기</a>
+          {% endif %}
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+
+  <!-- 최신 글 -->
+
+  <div class="my-5 col-12">
+    <h4 class="text-left">최신글</h4>
+    <table class="table table-hover">
+      <thead class="thead-dark">
+        <tr>
+          <th style="width: 6%"></th>
+          <th style="width: 36%">글 제목</th>
+          <th style="width: 36%">영화 제목</th>
+          <th style="width: 8%">평점</th>
+          <th style="width: 14%">작성자</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for article in articles %}
+        <tr>
+          <th scope="row">{{ article.pk }}</th>
+          <td>
+            {% if check_delta < article.created_at and article.comment_set.exists %}
+            <a href="{% url 'movies:movie_articles_detail' article.movie_title.pk article.pk %}">{{ article.title }} <small>[{{ article.comment_set.count }}]</a> <span class="badge badge-secondary">New</span></small>
+            {% elif check_delta < article.created_at %}
+            <a href="{% url 'movies:movie_articles_detail' article.movie_title.pk article.pk %}">{{ article.title }}</a> <small><span class="badge badge-secondary">New</span></small>
+            {% elif article.comment_set.exists %}
+            <a href="{% url 'movies:movie_articles_detail' article.movie_title.pk article.pk %}">{{ article.title }} <small>[{{ article.comment_set.count }}] </a>
+            {% else %}
+            <a href="{% url 'movies:movie_articles_detail' article.movie_title.pk article.pk %}">{{ article.title }}</a>
+            {% endif %}
+          </td>
+          <td>{{ article.movie_title }}</td>
+          <td>
+            {% if article.rank == 1 %}
+            ☆
+            {% elif article.rank == 2 %}
+            ★
+            {% elif article.rank == 3 %}
+            ★☆
+            {% elif article.rank == 4 %}
+            ★★
+            {% elif article.rank == 5 %}
+            ★★☆
+            {% elif article.rank == 6 %}
+            ★★★
+            {% elif article.rank == 7 %}
+            ★★★☆
+            {% elif article.rank == 8 %}
+            ★★★★
+            {% elif article.rank == 9 %}
+            ★★★★☆
+            {% elif article.rank == 10 %}
+            ★★★★★
+            {% else %}
+            -
+            {% endif %}
+          </td>
+          <td>{{ article.user.username }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% endblock %}

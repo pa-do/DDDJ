@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+{% load bootstrap4 %}
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% bootstrap_css %}
+  <style>
+    .form-control:focus {
+    color: #495057;
+    background-color: #fff;
+    border-color: #474747;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(127,127,127,.25);
+    }
+
+    .image { 
+      position: relative; 
+      width: 100%; /* for IE 6 */
+      border-radius: 10px;
+    }
+
+    .image > h2 { 
+      position: absolute; 
+      top: 0px; 
+      right: -10px; 
+      width: 100%;
+      text-shadow: 3px 3px 3px white;
+    }
+
+    .card {
+      border-color:rgba(0, 0, 0, 0);
+      min-width: 256px;
+      max-width: 253px;
+      min-height: 377.28px;
+      max-height: 377.28px;
+    }
+
+    .card:hover {
+      transform: scale(1.1);
+      -webkit-transition: all 1s ease;
+      -moz-transition: all 1s ease;
+      -ms-transition: all 1s ease;
+      transition: all 1s ease;
+    }
+
+    .pagination {
+      display: inline-flex;
+      text-align: center;
+      padding-left: 0;
+      list-style: none;
+      border-radius: .25rem;
+      justify-content: center;
+    }
+
+    .page-link {
+      position: relative;
+      display: block;
+      padding: .5rem .75rem;
+      margin-left: -1px;
+      line-height: 1.25;
+      color: #343a40;
+      background-color: #fff;
+      border: 1px solid #dee2e6;
+    }
+
+    .page-item.active .page-link {
+      z-index: 1;
+      color: #fff;
+      background-color: #292b2c;
+      border-color: #343a40;
+    }
+
+    .page-link:hover {
+      z-index: 2;
+      color: #343a40;
+      text-decoration: none;
+      background-color: #e9ecef;
+      border-color: #dee2e6;
+    }
+
+    .page-link:focus {
+      z-index: 3;
+      outline: 0;
+      box-shadow: 0 0 0 0.2rem rgba(123, 123, 123, .25);
+    }
+  </style>
+  <title>Web Project</title>
+</head>
+
+<body>
+  <!--nav bar-->
+  <nav class="navbar navbar-expand-lg sticky-top navbar-dark bg-dark">
+    <a class="navbar-brand" href="{% url 'main:index' %}">
+      <img src="https://image.flaticon.com/icons/svg/3068/3068885.svg" width="30" height="30" alt="" loading="lazy">
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <!-- 드랍다운 여백을 위한 style -->
+    <div class="collapse navbar-collapse" style="padding-right:70px;" id="navbarNav">
+      <ul class="navbar-nav ml-auto">
+        {% if user.is_authenticated %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'articles:index' %}">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'movies:index' %}">Movies</a>
+        </li>
+        <!-- 드랍다운 -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            {{ user.username }}
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <a class="dropdown-item" href="{% url 'accounts:myinfo' %}">내 정보</a>
+            <a class="dropdown-item" href="{% url 'movies:recommend' %}">For U</a>
+            {% if user.username == 'admin' %}
+            <a class="dropdown-item" href="http://localhost:8080/admin/">관리자</a>
+            {% endif %}
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="{% url 'accounts:logout' %}">Log out</a>
+          </div>
+        </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'articles:index' %}">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'movies:index' %}">Movies</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'accounts:signup' %}">Sign up</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'accounts:login' %}">Log in</a>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </nav>
+  <!--nav bar-->
+  {% block bigcontent %}
+  {% endblock %}
+  <div class="container">
+    {% block content %}
+    {% endblock %}
+  </div>
+  {% bootstrap_javascript jquery='full' %}
+</body>
+
+</html>

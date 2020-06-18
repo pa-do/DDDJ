@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+{% block content %}
+<h1>SIGN UP</h1>
+<form action="" method="POST">
+  {% csrf_token %}
+  {% bootstrap_form form %}
+  {% buttons %}
+  <div class="text-right">
+    <button type="submit" class="btn btn-dark">sign up</button>
+  </div>
+  {% endbuttons %}
+    <!-- {{ form.as_p }}
+  <button>회원 가입</button> -->
+</form>
+{% endblock %}

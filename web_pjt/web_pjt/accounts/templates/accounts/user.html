@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container my-5">
+  <h3>{{ user.username }}</h3>
+  <div class="container mx-2">
+    <h6>리뷰 <span class="font-weight-bold">{{ articles|length }}</span></h6>
+    <h6>댓글 <span class="font-weight-bold">{{ comments|length }}</span></h6>
+  </div>
+  <hr>
+  <div class="my-3">
+  <h4>리뷰를 작성한 영화</h4>
+    <small>포스터를 클릭하면 내가 작성한 글을 볼 수 있습니다.</small>
+  </div>
+  <div class="row">
+    {% for article in articles %}
+    <div class="col-3 mb-4 mx-0">
+      <a href="{% url 'articles:detail' article.pk %}">
+        <div class="card">
+          <div class="image">
+            <img src="https://image.tmdb.org/t/p/w342/{{article.movie_title.poster_path}}" class="card-img-top" alt="" data-toggle="modal"
+            style="object-fit: cover; width: 253px; height: 377.28px; border-radius: 10px;">   
+            <!-- 내가 작성한 영화의 평점이 7점 초과인 경우 녹색, 3점 미만인 경우 빨간색, 둘 다 아닌 경우 까만색으로
+            영화 포스터의 좌상단에 보인다. -->
+            {% if article.rank > 7 %}
+            <h2 class="text-success">{{ article.rank }}</h2>
+            {% elif article.rank < 3 %}
+            <h2 class="text-danger">{{ article.rank }}</h2>
+            {% else %}
+            <h2 class="text-dark">{{ article.rank }}</h2>
+            {% endif %}
+          </div>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+
+  <h4 class="my-3">댓글을 단 글</h4>
+  <table class="table table-hover" style="width: 100%">
+    <thead class="thead-dark">
+      <tr>
+        <th style="width: 6%"></th>
+        <th style="width: 20%">글 제목</th>
+        <th style="width: 20%">영화 제목</th>
+        <th style="width: 54%">내 댓글</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for comment in comments %}
+      <tr>
+        <th scope="row">{{ comment.pk }}</th>
+        <td> <a href="{% url 'articles:detail' comment.article.pk %}">{{ comment.article.title }}</a></td>
+        <td> {{ comment.article.movie_title }}</td>
+        <td> {{ comment.content }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+</div>
+{% endblock %}

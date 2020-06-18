@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+{% block content %}
+<div class="p-4 text-center">
+  {% if request.resolver_match.url_name == 'create' or request.resolver_match.url_name == 'movie_articles_create' %}
+  <h2>New</h2>
+  {% else %}
+  <h2>Edit</h2>
+  {% endif %}
+</div>
+<form action="" method="POST">
+  {% csrf_token %}
+  {% bootstrap_form form %}
+  {% if request.resolver_match.url_name == 'create' %}
+  <div class="text-right mx-auto">
+    <a href="{% url 'articles:index' %}" class="btn btn-dark">뒤로가기</a>
+    <button class="btn btn-dark">작성하기</button>
+  </div>
+  {% elif request.resolver_match.url_name == 'movie_articles_create' %}
+  <div class="text-right mx-auto">
+    <a href="{% url 'movies:index' %}" class="btn btn-dark">뒤로가기</a>
+    <button class="btn btn-dark">작성하기</button>
+  </div>
+  {% else %}
+  <div class="text-right mx-auto my-5">
+    <button class="btn btn-dark">수정하기</button>
+  </div>
+  {% endif %}
+
+</form>
+{% endblock %}

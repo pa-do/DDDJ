@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load bootstrap_pagination %}
+{% block content %}
+<br>
+<h1 class="text-center">
+  {% if request.resolver_match.url_name == 'movie_articles' %}
+  Community
+  <small class="d-block text-center p-1">영화 : {{ movie.title }}</small>
+  {% elif request.resolver_match.url_name == 'search' %}
+  Community
+  <small class="d-block text-center p-1">검색어 : {{ kwd }}</small>
+  {% else %}
+  Community
+  {% endif %}
+</h1>
+
+<!-- 검색 -->
+{% if request.resolver_match.url_name == 'index' %}
+<div class="row">
+  <div class="col-2"></div>
+  <div class="my-3 input-group col-8 text-center">
+    <input type="text" class="form-control mx-auto my-0" id="search" placeholder="글 제목으로 검색..." style="width: 80%">
+    <div class="input-group-append">
+      <button type="button" class="btn btn-dark" id="search_btn">검색</button>
+    </div>
+  </div>
+  <div class="col-2"></div>
+</div>
+
+<script>
+  // 검색 input tag에서 enter key의 입력이 감지된 경우, input tag의 입력값을 쿠키에 넣어 search/ 로 전송한다.
+  const Search = document.getElementById('search');
+  Search.addEventListener('keypress', function (event) {
+    if (event.key === 'Enter') {
+      kwd = document.getElementById('search').value;
+      console.log(kwd)
+      if (kwd != '') {
+        var date = new Date();
+        date.setTime(date.getTime() + 1 * 60 * 60 * 1 * 1000) // 1시간 쿠키 저장
+        document.cookie = 'kwd' + '=' + kwd + ';expires=' + date.toUTCString() + ';path=/';
+        window.location.href = "search/";
+      }
+    }
+  })
+  // 검색 버튼에서 클릭이 감지된 경우, input tag의 입력값을 쿠키에 넣어 search/ 로 전송한다.
+  const Searchbtn = document.getElementById('search_btn');
+  Searchbtn.addEventListener('click', function (event) {
+    kwd = document.getElementById('search').value;
+    console.log(kwd)
+    if (kwd != '') {
+      var date = new Date();
+      date.setTime(date.getTime() + 1 * 60 * 60 * 1 * 1000) // 1시간 쿠키 저장
+      document.cookie = 'kwd' + '=' + kwd + ';expires=' + date.toUTCString() + ';path=/';
+      window.location.href = "search/";
+    }    
+  })
+</script>
+{% endif %}
+
+<!-- 상단 태그 -->
+{% if request.resolver_match.url_name == 'index' %}
+<div class="text-right my-0">
+  <h5><a href="{% url 'articles:best' %}" class="badge badge-secondary mx-1"># 최고의 영화</a>
+    <a href="{% url 'articles:worst' %}" class="badge badge-secondary mx-1"># 최악의 영화</a></h5>
+</div>
+{% endif %}
+
+<br>
+<table class="table table-hover">
+  <thead class="thead-dark">
+    <tr>
+      <th style="width: 6%"></th>
+      <th style="width: 36%">글 제목</th>
+      <th style="width: 36%">영화 제목</th>
+      <th style="width: 8%">평점</th>
+      <th style="width: 14%">작성자</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for article in page_obj %}
+
+    <tr>
+      <th scope="row">{{ article.pk }}</th>
+      <td>
+        {% if request.resolver_match.url_name == 'index' %}
+          <!-- check_delta(현재 시간 기준으로 6시간 전 시간)보다 이 글의 작성 시간이 더 큰 경우 -->
+          <!-- new 버튼을 통해 이 글이 최근에 작성되었음을 보여준다. -->
+          {% if check_delta < article.created_at and article.comment_set.exists %}
+          <a href="{% url 'articles:detail' article.pk %}">{{ article.title }} <small>[{{ article.comment_set.count }}]</a> <span class="badge badge-secondary">New</span></small>
+          {% elif check_delta < article.created_at %}
+          <a href="{% url 'articles:detail' article.pk %}">{{ article.title }}</a> <small><span class="badge badge-secondary">New</span></small>
+          {% elif article.comment_set.exists %}
+          <a href="{% url 'articles:detail' article.pk %}">{{ article.title }} <small>[{{ article.comment_set.count }}] </a>
+          {% else %}
+          <a href="{% url 'articles:detail' article.pk %}">{{ article.title }}</a>
+          {% endif %}
+        {% else %}
+          {% if check_delta < article.created_at and article.comment_set.exists %}
+          <a href="{% url 'movies:movie_articles_detail' article.movie_title.pk article.pk %}">{{ article.title }} <small>[{{ article.comment_set.count }}]</a> <span class="badge badge-secondary">New</span></small>
+          {% elif check_delta < article.created_at %}
+          <a href="{% url 'movies:movie_articles_detail' article.movie_title.pk article.pk %}">{{ article.title }}</a> <small><span class="badge badge-secondary">New</span></small>
+          {% elif article.comment_set.exists %}
+          <a href="{% url 'movies:movie_articles_detail' article.movie_title.pk article.pk %}">{{ article.title }} <small>[{{ article.comment_set.count }}] </a>
+          {% else %}
+          <a href="{% url 'movies:movie_articles_detail' article.movie_title.pk article.pk %}">{{ article.title }}</a>
+          {% endif %}
+        {% endif %}
+        
+      </td>
+      <td> {{ article.movie_title }}</td>
+      <td>
+        {% if article.rank == 1 %}
+        ☆
+        {% elif article.rank == 2 %}
+        ★
+        {% elif article.rank == 3 %}
+        ★☆
+        {% elif article.rank == 4 %}
+        ★★
+        {% elif article.rank == 5 %}
+        ★★☆
+        {% elif article.rank == 6 %}
+        ★★★
+        {% elif article.rank == 7 %}
+        ★★★☆
+        {% elif article.rank == 8 %}
+        ★★★★
+        {% elif article.rank == 9 %}
+        ★★★★☆
+        {% elif article.rank == 10 %}
+        ★★★★★
+        {% else %}
+        -
+        {% endif %}
+      </td>
+      <td>{{ article.user.username }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="text-right p-3">
+  {% if request.resolver_match.url_name == 'index' %}
+  <a href="{% url 'articles:create' %}" class="btn btn-dark">평점 등록하기</a>
+  {% elif request.resolver_match.url_name == 'search' or request.resolver_match.url_name == 'best' or request.resolver_match.url_name == 'worst' %}
+  <a href="{% url 'articles:index' %}" class="btn btn-dark">뒤로가기</a>
+  <a href="{% url 'articles:create' %}" class="btn btn-dark">평점 등록하기</a>
+  {% else %}
+  <a href="{% url 'movies:index' %}" class="btn btn-dark">뒤로가기</a>
+  <a href="{% url 'movies:movie_articles_create' movie.pk %}" class="btn btn-dark">평점 등록하기</a>
+  {% endif %}
+
+</div>
+
+<div class="col-12 my-5 text-center">
+  {% bootstrap_paginate page_obj range=10 show_prev_next="false" show_first_last="true" %}
+</div>
+
+{% endblock %}

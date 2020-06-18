@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{$ load bootstrap4 %}
+
+{% block content %}
+
+<!-- <img src="https://image.tmdb.org/t/p/original/{{ movie.backdrop_path }}" class="card-img-top"
+alt="{{ movie.title }}" /> -->
+
+<div>
+  <!-- 글제목, 영화제목, 평점 -->
+  <div class="border-bottom p-3">
+    <h2>
+      글 제목 : {{ article.title }}
+    </h2>
+    <div>
+      <img src="https://image.tmdb.org/t/p/original/{{ movie.backdrop_path }}" width="300px" class="img-thumbnail" alt="{{ movie.title }}">
+    </div>
+    <div class="p-3 row justify-content-between">
+      <h5>
+        영화 : {{ article.movie_title }}
+      </h5>
+      <h5 class="text-right">
+        {% if article.rank == 1 %}
+        ☆
+        {% elif article.rank == 2 %}
+        ★
+        {% elif article.rank == 3 %}
+        ★☆
+        {% elif article.rank == 4 %}
+        ★★
+        {% elif article.rank == 5 %}
+        ★★☆
+        {% elif article.rank == 6 %}
+        ★★★
+        {% elif article.rank == 7 %}
+        ★★★☆
+        {% elif article.rank == 8 %}
+        ★★★★
+        {% elif article.rank == 9 %}
+        ★★★★☆
+        {% elif article.rank == 10 %}
+        ★★★★★
+        {% else %}
+        -
+        {% endif %}
+      </h5>
+    </div>
+  </div>
+  <!-- 내용, 작성시간, 수정시간 -->
+  <div class="border-bottom">
+    <div class="p-3">
+      <pre style="white-space:pre-wrap">{{ article.content }}</pre>
+    </div>
+    <div class="text-right p-3">
+      <small class="d-block">작성시간 : {{ article.created_at }}</small>
+      <small class="d-block">수정시간 : {{ article.updated_at }}</small>
+    </div>
+  </div>
+  
+ <!-- 하단 좌측 목록, 우측 수정삭제버튼 -->
+ {% if article.user == request.user %}
+ <!-- 목록으로 돌아가기 -->
+ <div class="row justify-content-between">
+   <div class="p-3">
+     {% if request.resolver_match.url_name == 'detail' %}
+     <a href="{% url 'articles:index' %}" class="btn btn-dark">목록</a>
+     {% else %}
+     <a href="{% url 'movies:movie_articles' movie.pk %}" class="btn btn-dark">목록</a>
+     {% endif %}
+   </div>
+
+   <!-- 작성자에게만 보이는 수정, 삭제 버튼 -->
+   <div class="p-3">
+     {% if request.resolver_match.url_name == 'detail' %}
+     <a href="{% url 'articles:update' article.pk %}" class="btn btn-dark">수정하기</a>
+     {% else %}
+     <a href="{% url 'movies:movie_articles_update' movie.pk article.pk %}" class="btn btn-dark">수정하기</a>
+     {% endif %}
+     <!-- <a href="{% url 'articles:delete' article.pk %}" class="btn btn-danger">글 삭제하기</a> -->
+     <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModal">삭제하기</button>
+     <!-- modal for delete -->
+     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+       aria-hidden="true">
+       <div class="modal-dialog">
+         <div class="modal-content">
+           <div class="modal-header">
+             <h5 class="modal-title" id="exampleModalLabel">경고</h5>
+             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+               <span aria-hidden="true">&times;</span>
+             </button>
+           </div>
+           <div class="modal-body">
+             정말 삭제하시겠습니까?
+           </div>
+           <div class="modal-footer">
+             <button type="button" class="btn btn-secondary" data-dismiss="modal">뒤로가기</button>
+             {% if request.resolver_match.url_name == 'detail' %}
+             <a href="{% url 'articles:delete' article.pk %}" class="btn btn-danger">삭제하기</a>
+             {% else %}
+             <a href="{% url 'movies:movie_articles_delete' movie.pk article.pk %}" class="btn btn-danger">삭제하기</a>
+             {% endif %}
+           </div>
+         </div>
+       </div>
+     </div>
+   </div>
+ </div>
+ <!-- 작성자가 아니라면 목록으로 돌아가기만 보임 -->
+ {% else %}
+ <div class="p-3">
+   {% if request.resolver_match.url_name == 'detail' %}
+   <a href="{% url 'articles:index' %}" class="btn btn-dark">목록</a>
+   {% else %}
+   <a href="{% url 'movies:movie_articles' movie.pk %}" class="btn btn-dark">목록</a>
+   {% endif %}
+ </div>
+ {% endif %}
+  <!-- 댓글 -->
+  <h4 class="my-3">Comment</h4>
+  <!-- 댓글 작성 -->
+  {% if user.is_authenticated %}
+    {% if request.resolver_match.url_name == 'detail' %}
+    <form action="{% url 'articles:comment_create' article.pk %}" method="POST">
+      {% csrf_token %}
+      
+      <div class="input-group mb-3">
+        <input type="text" class="form-control" name="content" placeholder="댓글">
+          <button type="submit" class="btn btn-dark">작성</button>
+      </div>
+    </form>
+    {% else %}
+    <form action="{% url 'movies:movie_comment_create' movie.pk article.pk %}" method="POST">
+      {% csrf_token %}
+      
+      <div class="input-group mb-3">
+        <input type="text" class="form-control" name="content" placeholder="댓글">
+          <button type="submit" class="btn btn-dark">작성</button>
+      </div>
+    </form>
+    {% endif %}
+  {% endif %}
+  <!-- 댓글 출력 -->
+  {% if article.comment_set.exists %}
+  <div class="row my-1 border-bottom">
+    <p class="col-1 m-0 text-center">작성자</p>
+    <p class="col-7 m-0 text-center">댓글</p>
+    <p class="col-2 text-center">작성시간</p>
+  </div>
+  {% endif %}
+
+  {% for comment in article.comment_set.all %}
+  <div class="row my-1">
+    <p class="col-1 m-0">{{ comment.user }}</p>
+    <p class="col-7 m-0">{{ comment.content }}</p>
+    <p class="col-2 text-center">{{ comment.updated_at|date:"y-m-d H:i" }}</p>
+    {% if request.resolver_match.url_name == 'detail' %}
+    <form action="{% url 'articles:comment_delete' article.pk comment.pk %}" method="POST" class="col-2">
+      {% csrf_token %}
+        {% if comment.user == request.user %}
+          <a href="{% url 'articles:comment_update' article.pk comment.pk %}" class="badge badge-pill badge-dark">수정</a>
+          <a href="{% url 'articles:comment_delete' article.pk comment.pk %}" class="badge badge-pill badge-danger">삭제</a>
+        {% endif %}
+      </form>
+    {% else %}
+    <form action="{% url 'movies:movie_comment_delete' movie.pk article.pk comment.pk %}" method="POST" class="col-2">
+      {% csrf_token %}
+        {% if comment.user == request.user %}
+          <a href="{% url 'movies:movie_comment_update' movie.pk article.pk comment.pk %}" class="badge badge-pill badge-dark">수정</a>
+          <a href="{% url 'movies:movie_comment_delete' movie.pk article.pk comment.pk %}" class="badge badge-pill badge-danger">삭제</a>
+        {% endif %}
+      </form>    
+    {% endif %}
+  </div>
+  {% endfor %}
+
+    <br>
+
+{% endblock %}
